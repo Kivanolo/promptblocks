@@ -37,6 +37,8 @@ GitHub Pages does not provide detailed product analytics. GitHub repository traf
 
 X announcement drafts are in `marketing/x-launch-posts.md`.
 
+The note usage article draft is in `marketing/note-usage-article.md`.
+
 ## iOS Project
 
 Open `PromptBlocks.xcodeproj` in Xcode and run the `PromptBlocks` scheme on an iPhone simulator or device.
