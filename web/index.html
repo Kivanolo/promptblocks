@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#2368d6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PromptBlocks">
+    <title>PromptBlocks</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar" aria-label="アプリ概要">
+        <div>
+          <p class="eyebrow">PromptBlocks</p>
+          <h1>ブロックでAIに伝える</h1>
+          <p class="lead">目的、条件、形式を選んで、コピーできるプロンプトに組み立てます。</p>
+        </div>
+        <div class="score-ring" aria-label="準備度">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <circle class="score-base" cx="24" cy="24" r="18"></circle>
+            <circle class="score-value" cx="24" cy="24" r="18"></circle>
+          </svg>
+          <span id="scoreValue">0</span>
+          <small>準備度</small>
+        </div>
+      </header>
+
+      <section class="section" aria-labelledby="templateTitle">
+        <div class="section-heading">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"></path>
+          </svg>
+          <h2 id="templateTitle">テンプレート</h2>
+        </div>
+        <div id="templateList" class="template-list" role="list"></div>
+      </section>
+
+      <section class="section" aria-labelledby="inputTitle">
+        <div class="section-heading">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 3h9l3 3v15H6z"></path>
+            <path d="M14 3v4h4M9 12h6M9 16h6"></path>
+          </svg>
+          <h2 id="inputTitle">材料</h2>
+        </div>
+        <textarea id="sourceInput" rows="6" placeholder="相手、目的、伝えたい内容を貼り付けてください。"></textarea>
+      </section>
+
+      <section class="section" aria-labelledby="blocksTitle">
+        <div class="section-heading">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 3h5v4h4v5h4v5h-4v4h-5v-4H8v-4H4V8h4z"></path>
+          </svg>
+          <h2 id="blocksTitle">ブロック</h2>
+        </div>
+        <div id="kindTabs" class="kind-tabs" role="tablist" aria-label="ブロック種類"></div>
+        <div id="blockPalette" class="block-palette" role="list"></div>
+
+        <div class="stack-header">
+          <h3>組み立て中</h3>
+          <button id="clearBlocks" class="icon-button" type="button" aria-label="ブロックを空にする">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"></path>
+            </svg>
+          </button>
+        </div>
+        <div id="selectedBlocks" class="selected-blocks" aria-live="polite"></div>
+      </section>
+
+      <section class="section preview-section" aria-labelledby="previewTitle">
+        <div class="preview-heading">
+          <div class="section-heading">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 8h10v13H8z"></path>
+              <path d="M5 3h10v13H5zM8 12h7M8 8h4"></path>
+            </svg>
+            <h2 id="previewTitle">完成プロンプト</h2>
+          </div>
+          <button id="copyPrompt" class="primary-button" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 8h10v13H8z"></path>
+              <path d="M5 3h10v13H5z"></path>
+            </svg>
+            <span>コピー</span>
+          </button>
+        </div>
+        <div id="hints" class="hints"></div>
+        <pre id="promptOutput"></pre>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

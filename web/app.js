@@ -1,0 +1,417 @@
+const kindColors = {
+  goal: "#d95050",
+  role: "#6254cf",
+  audience: "#138777",
+  source: "#c46a1b",
+  constraint: "#2368d6",
+  output: "#26895b",
+  tone: "#c54d85",
+  guardrail: "#7a4fcc"
+};
+
+const kindLabels = {
+  goal: "目的",
+  role: "役割",
+  audience: "相手",
+  source: "入力",
+  constraint: "条件",
+  output: "形式",
+  tone: "トーン",
+  guardrail: "確認"
+};
+
+const kindSymbols = {
+  goal: "◎",
+  role: "人",
+  audience: "相手",
+  source: "文",
+  constraint: "条",
+  output: "形",
+  tone: "色",
+  guardrail: "確"
+};
+
+const blockLibrary = {
+  goal: [
+    ["文章を整える", "読みやすく自然な文章に改善してください。"],
+    ["要約する", "重要な論点だけを残して要約してください。"],
+    ["アイデアを出す", "実行しやすいアイデアを複数提案してください。"],
+    ["比較する", "選択肢を比較し、判断材料を整理してください。"],
+    ["学習する", "理解を深めるために、順番に説明してください。"]
+  ],
+  role: [
+    ["編集者", "あなたは経験豊富な編集者です。"],
+    ["先生", "あなたは初学者に教えるのが得意な先生です。"],
+    ["面接官", "あなたは採用面接官です。"],
+    ["企画担当", "あなたは事業企画の担当者です。"],
+    ["厳しめのレビュアー", "あなたは論理の甘さを見逃さないレビュアーです。"]
+  ],
+  audience: [
+    ["初心者向け", "専門知識がない人にも伝わるようにしてください。"],
+    ["上司向け", "忙しい上司が短時間で判断できる内容にしてください。"],
+    ["顧客向け", "顧客に失礼がなく、信頼感が伝わる表現にしてください。"],
+    ["学生向け", "学生が自分で考えられる余白を残してください。"]
+  ],
+  source: [
+    ["貼り付け文を使う", "下の入力文を材料にしてください。"],
+    ["箇条書きを使う", "箇条書きのメモを整理して使ってください。"],
+    ["不足は質問", "情報が不足している場合は、作業前に確認質問をしてください。"],
+    ["推測を分ける", "事実と推測を分けて扱ってください。"]
+  ],
+  constraint: [
+    ["短く", "できるだけ短く、要点を優先してください。"],
+    ["具体例つき", "抽象論だけでなく、具体例を入れてください。"],
+    ["次の行動まで", "最後に次に取るべき行動を提案してください。"],
+    ["メリデメ", "メリットとデメリットを両方示してください。"],
+    ["3案に絞る", "候補は3つに絞り、それぞれの使いどころを説明してください。"]
+  ],
+  output: [
+    ["箇条書き", "出力は箇条書きにしてください。"],
+    ["表", "比較しやすい表で出力してください。"],
+    ["メール文", "そのまま送れるメール文として出力してください。"],
+    ["チェックリスト", "確認しやすいチェックリストで出力してください。"],
+    ["手順", "手順を番号付きで出力してください。"]
+  ],
+  tone: [
+    ["丁寧", "丁寧で落ち着いた表現にしてください。"],
+    ["やさしい", "やさしく、圧のない表現にしてください。"],
+    ["ビジネス", "ビジネスで使いやすい簡潔な表現にしてください。"],
+    ["カジュアル", "親しみやすくカジュアルな表現にしてください。"]
+  ],
+  guardrail: [
+    ["確認質問", "曖昧な点があれば、先に最大3つまで質問してください。"],
+    ["根拠を分ける", "根拠がある内容と推測を分けて書いてください。"],
+    ["改善案", "最後に、より良い結果にするための改善案を示してください。"],
+    ["禁止事項", "不明な情報を断定しないでください。"]
+  ]
+};
+
+const templates = [
+  {
+    id: "email",
+    title: "メールを整える",
+    subtitle: "失礼なく、短く、送れる文に",
+    icon: "✉",
+    placeholder: "相手、目的、伝えたい内容を貼り付けてください。",
+    blocks: [
+      makeBlock("role", "編集者", "あなたは経験豊富な編集者です。"),
+      makeBlock("goal", "文章を整える", "読みやすく自然な文章に改善してください。"),
+      makeBlock("audience", "顧客向け", "顧客に失礼がなく、信頼感が伝わる表現にしてください。"),
+      makeBlock("output", "メール文", "そのまま送れるメール文として出力してください。"),
+      makeBlock("tone", "丁寧", "丁寧で落ち着いた表現にしてください。")
+    ]
+  },
+  {
+    id: "summary",
+    title: "長文を要約",
+    subtitle: "読むべき点だけに圧縮",
+    icon: "文",
+    placeholder: "要約したい文章を貼り付けてください。",
+    blocks: [
+      makeBlock("goal", "要約する", "重要な論点だけを残して要約してください。"),
+      makeBlock("source", "貼り付け文を使う", "下の入力文を材料にしてください。"),
+      makeBlock("constraint", "短く", "できるだけ短く、要点を優先してください。"),
+      makeBlock("output", "箇条書き", "出力は箇条書きにしてください。"),
+      makeBlock("guardrail", "根拠を分ける", "根拠がある内容と推測を分けて書いてください。")
+    ]
+  },
+  {
+    id: "planning",
+    title: "企画のたたき台",
+    subtitle: "雑なメモを提案に変える",
+    icon: "案",
+    placeholder: "作りたいもの、対象ユーザー、悩み、制約を書いてください。",
+    blocks: [
+      makeBlock("role", "企画担当", "あなたは事業企画の担当者です。"),
+      makeBlock("goal", "アイデアを出す", "実行しやすいアイデアを複数提案してください。"),
+      makeBlock("constraint", "3案に絞る", "候補は3つに絞り、それぞれの使いどころを説明してください。"),
+      makeBlock("constraint", "メリデメ", "メリットとデメリットを両方示してください。"),
+      makeBlock("output", "表", "比較しやすい表で出力してください。")
+    ]
+  },
+  {
+    id: "study",
+    title: "学習サポート",
+    subtitle: "わからない所を順にほどく",
+    icon: "学",
+    placeholder: "学びたいテーマ、今わからない点、目標を書いてください。",
+    blocks: [
+      makeBlock("role", "先生", "あなたは初学者に教えるのが得意な先生です。"),
+      makeBlock("goal", "学習する", "理解を深めるために、順番に説明してください。"),
+      makeBlock("audience", "初心者向け", "専門知識がない人にも伝わるようにしてください。"),
+      makeBlock("constraint", "具体例つき", "抽象論だけでなく、具体例を入れてください。"),
+      makeBlock("output", "手順", "手順を番号付きで出力してください。")
+    ]
+  }
+];
+
+const state = {
+  selectedTemplateId: templates[0].id,
+  selectedKind: "goal",
+  blocks: templates[0].blocks.map(cloneBlock),
+  input: ""
+};
+
+const elements = {
+  templateList: document.querySelector("#templateList"),
+  sourceInput: document.querySelector("#sourceInput"),
+  kindTabs: document.querySelector("#kindTabs"),
+  blockPalette: document.querySelector("#blockPalette"),
+  selectedBlocks: document.querySelector("#selectedBlocks"),
+  clearBlocks: document.querySelector("#clearBlocks"),
+  promptOutput: document.querySelector("#promptOutput"),
+  copyPrompt: document.querySelector("#copyPrompt"),
+  scoreValue: document.querySelector("#scoreValue"),
+  scoreRing: document.querySelector(".score-value"),
+  hints: document.querySelector("#hints")
+};
+
+function makeBlock(kind, title, instruction) {
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    kind,
+    title,
+    instruction
+  };
+}
+
+function cloneBlock(block) {
+  return makeBlock(block.kind, block.title, block.instruction);
+}
+
+function render() {
+  renderTemplates();
+  renderKinds();
+  renderPalette();
+  renderSelectedBlocks();
+  renderPrompt();
+  persistState();
+}
+
+function renderTemplates() {
+  elements.templateList.innerHTML = "";
+  templates.forEach((template) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `template-card ${template.id === state.selectedTemplateId ? "active" : ""}`;
+    button.setAttribute("role", "listitem");
+    button.innerHTML = `
+      <span class="template-icon">${template.icon}</span>
+      <span class="template-title">${template.title}</span>
+      <span class="template-subtitle">${template.subtitle}</span>
+    `;
+    button.addEventListener("click", () => {
+      state.selectedTemplateId = template.id;
+      state.selectedKind = "goal";
+      state.blocks = template.blocks.map(cloneBlock);
+      elements.sourceInput.placeholder = template.placeholder;
+      render();
+    });
+    elements.templateList.append(button);
+  });
+}
+
+function renderKinds() {
+  elements.kindTabs.innerHTML = "";
+  Object.keys(kindLabels).forEach((kind) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `kind-tab ${kind === state.selectedKind ? "active" : ""}`;
+    button.style.setProperty("--kind", kindColors[kind]);
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(kind === state.selectedKind));
+    button.textContent = `${kindSymbols[kind]} ${kindLabels[kind]}`;
+    button.addEventListener("click", () => {
+      state.selectedKind = kind;
+      render();
+    });
+    elements.kindTabs.append(button);
+  });
+}
+
+function renderPalette() {
+  elements.blockPalette.innerHTML = "";
+  blockLibrary[state.selectedKind].forEach(([title, instruction]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "block-card";
+    button.style.setProperty("--kind", kindColors[state.selectedKind]);
+    button.innerHTML = `
+      <span class="plus-dot">+</span>
+      <span>
+        <span class="block-title">${title}</span>
+        <span class="block-kind">${kindLabels[state.selectedKind]}</span>
+      </span>
+    `;
+    button.addEventListener("click", () => {
+      state.blocks.push(makeBlock(state.selectedKind, title, instruction));
+      render();
+    });
+    elements.blockPalette.append(button);
+  });
+}
+
+function renderSelectedBlocks() {
+  elements.selectedBlocks.innerHTML = "";
+  elements.clearBlocks.hidden = state.blocks.length === 0;
+
+  if (state.blocks.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-stack";
+    empty.textContent = "上のブロックをタップして追加します。";
+    elements.selectedBlocks.append(empty);
+    return;
+  }
+
+  state.blocks.forEach((block, index) => {
+    const row = document.createElement("div");
+    row.className = "selected-row";
+    row.style.setProperty("--kind", kindColors[block.kind]);
+    row.innerHTML = `
+      <span class="order-badge">${index + 1}</span>
+      <span class="selected-copy">
+        <strong>${block.title}</strong>
+        <span>${block.instruction}</span>
+      </span>
+      <span class="row-actions">
+        <button type="button" data-action="up" aria-label="${block.title}を上へ">↑</button>
+        <button type="button" data-action="down" aria-label="${block.title}を下へ">↓</button>
+        <button type="button" data-action="remove" aria-label="${block.title}を削除">×</button>
+      </span>
+    `;
+    const [up, down, remove] = row.querySelectorAll("button");
+    up.disabled = index === 0;
+    down.disabled = index === state.blocks.length - 1;
+    up.addEventListener("click", () => moveBlock(index, -1));
+    down.addEventListener("click", () => moveBlock(index, 1));
+    remove.addEventListener("click", () => {
+      state.blocks = state.blocks.filter((item) => item.id !== block.id);
+      render();
+    });
+    elements.selectedBlocks.append(row);
+  });
+}
+
+function renderPrompt() {
+  const prompt = composePrompt();
+  const score = readinessScore();
+  const dash = 113 - (113 * score) / 100;
+  elements.promptOutput.textContent = prompt;
+  elements.scoreValue.textContent = String(score);
+  elements.scoreRing.style.strokeDashoffset = String(dash);
+  elements.scoreRing.style.stroke = score >= 80 ? kindColors.output : score >= 60 ? kindColors.source : kindColors.goal;
+  renderHints();
+}
+
+function renderHints() {
+  elements.hints.innerHTML = "";
+  hints().forEach((hint) => {
+    const item = document.createElement("div");
+    item.className = "hint";
+    item.innerHTML = `<span>◇</span><span>${hint}</span>`;
+    elements.hints.append(item);
+  });
+}
+
+function moveBlock(index, offset) {
+  const target = index + offset;
+  if (target < 0 || target >= state.blocks.length) return;
+  const next = [...state.blocks];
+  const [item] = next.splice(index, 1);
+  next.splice(target, 0, item);
+  state.blocks = next;
+  render();
+}
+
+function composePrompt() {
+  const sections = [];
+  if (state.blocks.length > 0) {
+    const lines = state.blocks.map((block, index) => `${index + 1}. ${block.instruction}`).join("\n");
+    sections.push(`# 指示\n${lines}`);
+  }
+
+  const input = state.input.trim();
+  sections.push(`# 入力\n${input || "ここに材料を貼り付けます。"}`);
+  sections.push("# 出力前の確認\n条件同士が矛盾する場合は、最も自然な解釈を1つ選び、必要なら短く理由を添えてください。");
+  return sections.join("\n\n");
+}
+
+function readinessScore() {
+  const kinds = new Set(state.blocks.map((block) => block.kind));
+  let score = 20;
+  if (kinds.has("goal")) score += 20;
+  if (kinds.has("source") || state.input.trim()) score += 20;
+  if (kinds.has("output")) score += 20;
+  if (kinds.has("constraint") || kinds.has("tone")) score += 10;
+  if (kinds.has("guardrail")) score += 10;
+  return Math.min(score, 100);
+}
+
+function hints() {
+  const kinds = new Set(state.blocks.map((block) => block.kind));
+  const items = [];
+  if (!kinds.has("goal")) items.push("目的ブロックを足すと、AIが何をすべきか判断しやすくなります。");
+  if (!state.input.trim() && !kinds.has("source")) items.push("入力文か入力ブロックがあると、出力のぶれが減ります。");
+  if (!kinds.has("output")) items.push("形式ブロックを足すと、コピーしやすい結果になります。");
+  if (!kinds.has("guardrail")) items.push("確認ブロックを足すと、AIの思い込みを減らせます。");
+  return items.slice(0, 3);
+}
+
+function persistState() {
+  const payload = {
+    selectedTemplateId: state.selectedTemplateId,
+    selectedKind: state.selectedKind,
+    blocks: state.blocks,
+    input: state.input
+  };
+  localStorage.setItem("promptblocks-state", JSON.stringify(payload));
+}
+
+function restoreState() {
+  const raw = localStorage.getItem("promptblocks-state");
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    if (saved.selectedTemplateId) state.selectedTemplateId = saved.selectedTemplateId;
+    if (saved.selectedKind && kindLabels[saved.selectedKind]) state.selectedKind = saved.selectedKind;
+    if (Array.isArray(saved.blocks)) state.blocks = saved.blocks.map(cloneBlock);
+    if (typeof saved.input === "string") {
+      state.input = saved.input;
+      elements.sourceInput.value = saved.input;
+    }
+  } catch {
+    localStorage.removeItem("promptblocks-state");
+  }
+}
+
+elements.sourceInput.addEventListener("input", (event) => {
+  state.input = event.target.value;
+  renderPrompt();
+  persistState();
+});
+
+elements.clearBlocks.addEventListener("click", () => {
+  state.blocks = [];
+  render();
+});
+
+elements.copyPrompt.addEventListener("click", async () => {
+  await navigator.clipboard.writeText(composePrompt());
+  elements.copyPrompt.classList.add("copied");
+  elements.copyPrompt.querySelector("span").textContent = "コピー済み";
+  window.setTimeout(() => {
+    elements.copyPrompt.classList.remove("copied");
+    elements.copyPrompt.querySelector("span").textContent = "コピー";
+  }, 1400);
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+
+restoreState();
+const selectedTemplate = templates.find((template) => template.id === state.selectedTemplateId) || templates[0];
+elements.sourceInput.placeholder = selectedTemplate.placeholder;
+render();
