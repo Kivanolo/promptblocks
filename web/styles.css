@@ -518,6 +518,30 @@ pre {
   font: 0.78rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.app-footer a {
+  color: var(--blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.app-footer a:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
 @media (min-width: 760px) {
   .app-shell {
     padding-top: 26px;
