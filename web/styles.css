@@ -460,6 +460,9 @@ textarea:focus {
 }
 
 .preview-section {
+  position: static;
+  top: auto;
+  align-self: auto;
   padding-bottom: 12px;
 }
 
@@ -500,6 +503,7 @@ textarea:focus {
 }
 
 pre {
+  position: static;
   max-height: 260px;
   min-height: 118px;
   margin: 11px 0 0;
@@ -537,6 +541,12 @@ pre {
 
   .block-palette {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .preview-section {
+    position: static;
+    top: auto;
+    align-self: auto;
   }
 }
 
