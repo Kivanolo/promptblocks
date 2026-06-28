@@ -1,7 +1,7 @@
 {
   "name": "PromptBlocks",
   "short_name": "PromptBlocks",
-  "description": "選択だけでAI向けプロンプトを組み立てるPWA",
+  "description": "用途と条件を選んでAI向けプロンプトを作るPWA",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

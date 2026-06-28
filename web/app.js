@@ -69,6 +69,7 @@ const blockLibrary = {
     ["箇条書き", "出力は箇条書きにしてください。"],
     ["表", "比較しやすい表で出力してください。"],
     ["メール文", "そのまま送れるメール文として出力してください。"],
+    ["投稿文", "SNSやチャットにそのまま貼れる投稿文として出力してください。"],
     ["チェックリスト", "確認しやすいチェックリストで出力してください。"],
     ["手順", "手順を番号付きで出力してください。"]
   ],
@@ -205,6 +206,38 @@ const templates = [
       makeBlock("audience", "初心者向け", "専門知識がない人にも伝わるようにしてください。"),
       makeBlock("constraint", "具体例つき", "抽象論だけでなく、具体例を入れてください。"),
       makeBlock("output", "手順", "手順を番号付きで出力してください。")
+    ]
+  },
+  {
+    id: "post",
+    title: "SNS投稿",
+    subtitle: "短く伝わる文に",
+    icon: "投",
+    placeholder: "投稿したい内容、伝えたいこと、避けたい表現を貼り付けてください。",
+    materialType: "draft",
+    materialHandling: "organize-first",
+    blocks: [
+      makeBlock("role", "編集者", "あなたは経験豊富な編集者です。"),
+      makeBlock("goal", "文章を整える", "読みやすく自然な文章に改善してください。"),
+      makeBlock("output", "投稿文", "SNSやチャットにそのまま貼れる投稿文として出力してください。"),
+      makeBlock("constraint", "短く", "できるだけ短く、要点を優先してください。"),
+      makeBlock("tone", "カジュアル", "親しみやすくカジュアルな表現にしてください。")
+    ]
+  },
+  {
+    id: "decision",
+    title: "相談を整理",
+    subtitle: "悩みを判断材料に",
+    icon: "相",
+    placeholder: "迷っていること、選択肢、気になっている条件を貼り付けてください。",
+    materialType: "memo",
+    materialHandling: "separate-facts",
+    blocks: [
+      makeBlock("role", "厳しめのレビュアー", "あなたは論理の甘さを見逃さないレビュアーです。"),
+      makeBlock("goal", "比較する", "選択肢を比較し、判断材料を整理してください。"),
+      makeBlock("constraint", "メリデメ", "メリットとデメリットを両方示してください。"),
+      makeBlock("constraint", "次の行動まで", "最後に次に取るべき行動を提案してください。"),
+      makeBlock("output", "表", "比較しやすい表で出力してください。")
     ]
   }
 ];
@@ -405,7 +438,7 @@ function renderPrompt() {
   const score = readinessScore();
   const dash = 113 - (113 * score) / 100;
   elements.promptOutput.textContent = prompt;
-  elements.scoreValue.textContent = String(score);
+  elements.scoreValue.textContent = `${score}%`;
   elements.scoreRing.style.strokeDashoffset = String(dash);
   elements.scoreRing.style.stroke = score >= 80 ? kindColors.output : score >= 60 ? kindColors.source : kindColors.goal;
   renderHints();

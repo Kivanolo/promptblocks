@@ -90,7 +90,7 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 86px;
+  min-width: 98px;
   height: 34px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -528,7 +528,7 @@ pre {
   }
 
   .template-list {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .material-controls {
