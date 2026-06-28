@@ -90,8 +90,8 @@ const materialTypes = [
   {
     id: "free",
     label: "自由文",
-    placeholder: "こだわりたい前提があれば書いてください。",
-    instruction: "追加メモがある場合は文脈を読み取り、ない場合は選択された条件だけで作成してください。"
+    placeholder: "対象の文章やメモを貼り付けてください。",
+    instruction: "元の文章がある場合は文脈を読み取り、ない場合は選択された条件だけで作成してください。"
   },
   {
     id: "memo",
@@ -108,7 +108,7 @@ const materialTypes = [
   {
     id: "draft",
     label: "下書き",
-    placeholder: "メール、投稿、説明文などの下書きを貼り付けてください。",
+    placeholder: "送られてきたメール、返信したい内容、下書きなどを貼り付けてください。",
     instruction: "入力は下書きです。元の意図を保ちながら、必要に応じて構成と表現を整えてください。"
   },
   {
@@ -123,12 +123,12 @@ const materialHandlings = [
   {
     id: "use-as-is",
     label: "そのまま使う",
-    instruction: "追加メモがある場合は主材料として扱い、ない場合は選択された条件を優先してください。"
+    instruction: "元の文章がある場合は主材料として扱い、ない場合は選択された条件を優先してください。"
   },
   {
     id: "organize-first",
     label: "整理してから",
-    instruction: "追加メモがある場合はまず整理し、目的に必要な情報だけを使ってください。"
+    instruction: "元の文章がある場合はまず整理し、目的に必要な情報だけを使ってください。"
   },
   {
     id: "ask-if-missing",
@@ -138,7 +138,7 @@ const materialHandlings = [
   {
     id: "separate-facts",
     label: "事実と推測",
-    instruction: "追加メモがある場合は、事実、推測、希望を分けて扱ってください。"
+    instruction: "元の文章がある場合は、事実、推測、希望を分けて扱ってください。"
   }
 ];
 
@@ -215,6 +215,7 @@ const state = {
   materialType: templates[0].materialType,
   materialHandling: templates[0].materialHandling,
   blocks: templates[0].blocks.map(cloneBlock),
+  sourceText: "",
   input: ""
 };
 
@@ -222,8 +223,11 @@ const elements = {
   templateList: document.querySelector("#templateList"),
   materialTypeList: document.querySelector("#materialTypeList"),
   materialHandlingList: document.querySelector("#materialHandlingList"),
+  sourceMaterial: document.querySelector("#sourceMaterial"),
+  sourceMaterialSummary: document.querySelector("#sourceMaterialSummary"),
+  sourceText: document.querySelector("#sourceText"),
   optionalInput: document.querySelector("#optionalInput"),
-  sourceInput: document.querySelector("#sourceInput"),
+  noteInput: document.querySelector("#noteInput"),
   kindTabs: document.querySelector("#kindTabs"),
   blockPalette: document.querySelector("#blockPalette"),
   selectedBlocks: document.querySelector("#selectedBlocks"),
@@ -276,7 +280,7 @@ function renderTemplates() {
       state.materialType = template.materialType;
       state.materialHandling = template.materialHandling;
       state.blocks = template.blocks.map(cloneBlock);
-      updateInputPlaceholder();
+      updateInputLabels();
       render();
     });
     elements.templateList.append(button);
@@ -286,7 +290,7 @@ function renderTemplates() {
 function renderMaterialControls() {
   renderChoiceList(elements.materialTypeList, materialTypes, state.materialType, (id) => {
     state.materialType = id;
-    updateInputPlaceholder();
+    updateInputLabels();
     render();
   });
 
@@ -308,10 +312,11 @@ function renderChoiceList(container, choices, selectedId, onSelect) {
   });
 }
 
-function updateInputPlaceholder() {
+function updateInputLabels() {
   const type = getMaterialType();
   const template = templates.find((item) => item.id === state.selectedTemplateId) || templates[0];
-  elements.sourceInput.placeholder = type.placeholder || template.placeholder;
+  elements.sourceMaterialSummary.textContent = template.id === "email" ? "受信メールを貼る" : "元の文章を貼る";
+  elements.sourceText.placeholder = type.placeholder || template.placeholder;
 }
 
 function renderKinds() {
@@ -438,11 +443,14 @@ function composePrompt() {
     sections.push(`# 材料の扱い\n${materialInstructions.map((instruction, index) => `${index + 1}. ${instruction}`).join("\n")}`);
   }
 
+  const sourceText = state.sourceText.trim();
+  if (sourceText) {
+    sections.push(`# 元の文章\n${sourceText}`);
+  }
+
   const input = state.input.trim();
   if (input) {
     sections.push(`# 追加メモ\n${input}`);
-  } else {
-    sections.push("# 追加メモ\nなし。選択された条件だけで作成してください。");
   }
   sections.push("# 出力前の確認\n条件同士が矛盾する場合は、最も自然な解釈を1つ選び、必要なら短く理由を添えてください。");
   return sections.join("\n\n");
@@ -453,7 +461,7 @@ function readinessScore() {
   let score = 20;
   if (kinds.has("goal")) score += 20;
   if (state.materialType && state.materialHandling) score += 20;
-  if (kinds.has("source") || state.input.trim()) score += 5;
+  if (kinds.has("source") || state.sourceText.trim()) score += 5;
   if (kinds.has("output")) score += 20;
   if (kinds.has("constraint") || kinds.has("tone")) score += 10;
   if (kinds.has("guardrail")) score += 10;
@@ -477,6 +485,7 @@ function persistState() {
     materialType: state.materialType,
     materialHandling: state.materialHandling,
     blocks: state.blocks,
+    sourceText: state.sourceText,
     input: state.input
   };
   localStorage.setItem("promptblocks-state", JSON.stringify(payload));
@@ -492,9 +501,14 @@ function restoreState() {
     if (saved.materialType && materialTypes.some((choice) => choice.id === saved.materialType)) state.materialType = saved.materialType;
     if (saved.materialHandling && materialHandlings.some((choice) => choice.id === saved.materialHandling)) state.materialHandling = saved.materialHandling;
     if (Array.isArray(saved.blocks)) state.blocks = saved.blocks.map(cloneBlock);
+    if (typeof saved.sourceText === "string") {
+      state.sourceText = saved.sourceText;
+      elements.sourceText.value = saved.sourceText;
+      elements.sourceMaterial.open = saved.sourceText.trim().length > 0;
+    }
     if (typeof saved.input === "string") {
       state.input = saved.input;
-      elements.sourceInput.value = saved.input;
+      elements.noteInput.value = saved.input;
       elements.optionalInput.open = saved.input.trim().length > 0;
     }
   } catch {
@@ -551,7 +565,13 @@ function showCopyState(label, copied) {
   }, 1400);
 }
 
-elements.sourceInput.addEventListener("input", (event) => {
+elements.sourceText.addEventListener("input", (event) => {
+  state.sourceText = event.target.value;
+  renderPrompt();
+  persistState();
+});
+
+elements.noteInput.addEventListener("input", (event) => {
   state.input = event.target.value;
   renderPrompt();
   persistState();
@@ -579,5 +599,5 @@ if ("serviceWorker" in navigator) {
 }
 
 restoreState();
-updateInputPlaceholder();
+updateInputLabels();
 render();

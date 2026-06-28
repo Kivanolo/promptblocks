@@ -246,6 +246,10 @@ h3 {
   background: var(--panel);
 }
 
+.optional-input + .optional-input {
+  margin-top: 8px;
+}
+
 .optional-input summary {
   min-height: 44px;
   padding: 12px 13px;
