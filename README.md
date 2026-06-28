@@ -33,6 +33,10 @@ For GitHub Pages, push this repository to GitHub and use the included GitHub Act
 
 GitHub Pages does not provide detailed product analytics. GitHub repository traffic can show limited visits/referrers, but prompt-building actions inside the app are not tracked. The MVP intentionally ships with no third-party analytics.
 
+## Launch Copy
+
+X announcement drafts are in `marketing/x-launch-posts.md`.
+
 ## iOS Project
 
 Open `PromptBlocks.xcodeproj` in Xcode and run the `PromptBlocks` scheme on an iPhone simulator or device.
