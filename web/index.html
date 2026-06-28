@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#2368d6">
+    <meta name="theme-color" content="#246bfe">
+    <meta name="description" content="文章を書かずに、選択だけでAI向けプロンプトを組み立てるPWAです。">
+    <meta property="og:title" content="PromptBlocks">
+    <meta property="og:description" content="選ぶだけで整うプロンプト。面倒な文章入力を減らして、AIへの伝え方を組み立てます。">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PromptBlocks">
@@ -17,8 +20,8 @@
       <header class="topbar" aria-label="アプリ概要">
         <div>
           <p class="eyebrow">PromptBlocks</p>
-          <h1>ブロックでAIに伝える</h1>
-          <p class="lead">目的、条件、形式を選んで、コピーできるプロンプトに組み立てます。</p>
+          <h1>選ぶだけで整う</h1>
+          <p class="lead">文章なしでプロンプト作成。</p>
         </div>
         <div class="score-ring" aria-label="準備度">
           <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -35,7 +38,7 @@
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"></path>
           </svg>
-          <h2 id="templateTitle">テンプレート</h2>
+          <h2 id="templateTitle">用途</h2>
         </div>
         <div id="templateList" class="template-list" role="list"></div>
       </section>
@@ -69,7 +72,7 @@
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M8 3h5v4h4v5h4v5h-4v4h-5v-4H8v-4H4V8h4z"></path>
           </svg>
-          <h2 id="blocksTitle">ブロック</h2>
+          <h2 id="blocksTitle">指示</h2>
         </div>
         <div id="kindTabs" class="kind-tabs" role="tablist" aria-label="ブロック種類"></div>
         <div id="blockPalette" class="block-palette" role="list"></div>

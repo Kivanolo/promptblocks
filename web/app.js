@@ -1,12 +1,12 @@
 const kindColors = {
-  goal: "#d95050",
-  role: "#6254cf",
-  audience: "#138777",
-  source: "#c46a1b",
-  constraint: "#2368d6",
-  output: "#26895b",
-  tone: "#c54d85",
-  guardrail: "#7a4fcc"
+  goal: "#d95c55",
+  role: "#5f62c8",
+  audience: "#178978",
+  source: "#b86b2d",
+  constraint: "#246bfe",
+  output: "#2b815d",
+  tone: "#bf5a88",
+  guardrail: "#8059c7"
 };
 
 const kindLabels = {
@@ -23,7 +23,7 @@ const kindLabels = {
 const kindSymbols = {
   goal: "◎",
   role: "人",
-  audience: "相手",
+  audience: "宛",
   source: "文",
   constraint: "条",
   output: "形",
@@ -146,7 +146,7 @@ const templates = [
   {
     id: "email",
     title: "メールを整える",
-    subtitle: "失礼なく、短く、送れる文に",
+    subtitle: "短く、失礼なく",
     icon: "✉",
     placeholder: "相手、目的、伝えたい内容を貼り付けてください。",
     materialType: "draft",
@@ -178,7 +178,7 @@ const templates = [
   {
     id: "planning",
     title: "企画のたたき台",
-    subtitle: "雑なメモを提案に変える",
+    subtitle: "雑メモから提案へ",
     icon: "案",
     placeholder: "作りたいもの、対象ユーザー、悩み、制約を書いてください。",
     materialType: "memo",
@@ -194,7 +194,7 @@ const templates = [
   {
     id: "study",
     title: "学習サポート",
-    subtitle: "わからない所を順にほどく",
+    subtitle: "わからない所を順に",
     icon: "学",
     placeholder: "学びたいテーマ、今わからない点、目標を書いてください。",
     materialType: "free",
@@ -510,6 +510,47 @@ function getMaterialHandling() {
   return materialHandlings.find((choice) => choice.id === state.materialHandling) || materialHandlings[0];
 }
 
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Some embedded browsers deny clipboard writes even after a user click.
+    }
+  }
+
+  const field = document.createElement("textarea");
+  field.value = text;
+  field.setAttribute("readonly", "");
+  field.style.position = "fixed";
+  field.style.top = "-999px";
+  field.style.opacity = "0";
+  document.body.append(field);
+  field.select();
+  const copied = document.execCommand("copy");
+  field.remove();
+  if (!copied) throw new Error("Copy failed");
+  return true;
+}
+
+function selectPromptOutput() {
+  const selection = window.getSelection();
+  const range = document.createRange();
+  range.selectNodeContents(elements.promptOutput);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function showCopyState(label, copied) {
+  elements.copyPrompt.classList.toggle("copied", copied);
+  elements.copyPrompt.querySelector("span").textContent = label;
+  window.setTimeout(() => {
+    elements.copyPrompt.classList.remove("copied");
+    elements.copyPrompt.querySelector("span").textContent = "コピー";
+  }, 1400);
+}
+
 elements.sourceInput.addEventListener("input", (event) => {
   state.input = event.target.value;
   renderPrompt();
@@ -522,13 +563,13 @@ elements.clearBlocks.addEventListener("click", () => {
 });
 
 elements.copyPrompt.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(composePrompt());
-  elements.copyPrompt.classList.add("copied");
-  elements.copyPrompt.querySelector("span").textContent = "コピー済み";
-  window.setTimeout(() => {
-    elements.copyPrompt.classList.remove("copied");
-    elements.copyPrompt.querySelector("span").textContent = "コピー";
-  }, 1400);
+  try {
+    await copyText(composePrompt());
+    showCopyState("コピー済み", true);
+  } catch {
+    selectPromptOutput();
+    showCopyState("選択済み", false);
+  }
 });
 
 if ("serviceWorker" in navigator) {

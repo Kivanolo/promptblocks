@@ -1,4 +1,4 @@
-const CACHE_NAME = "promptblocks-v5";
+const CACHE_NAME = "promptblocks-v12";
 const ASSETS = [
   "./",
   "./index.html",
