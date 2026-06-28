@@ -555,11 +555,7 @@ pre {
   }
 
   .preview-section {
-    position: sticky;
-    bottom: 0;
-    border-top: 1px solid rgba(219, 225, 234, 0.8);
-    padding-top: 16px;
-    background: linear-gradient(180deg, rgba(244, 246, 249, 0.9), var(--bg) 18%);
+    padding-top: 2px;
   }
 }
 
