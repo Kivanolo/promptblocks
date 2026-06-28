@@ -86,6 +86,62 @@ const blockLibrary = {
   ]
 };
 
+const materialTypes = [
+  {
+    id: "free",
+    label: "自由文",
+    placeholder: "こだわりたい前提があれば書いてください。",
+    instruction: "追加メモがある場合は文脈を読み取り、ない場合は選択された条件だけで作成してください。"
+  },
+  {
+    id: "memo",
+    label: "雑メモ",
+    placeholder: "思いついたことを順不同で貼り付けてください。",
+    instruction: "入力は未整理のメモです。重複や順序の乱れを整理してから使ってください。"
+  },
+  {
+    id: "bullets",
+    label: "箇条書き",
+    placeholder: "箇条書きのメモを貼り付けてください。",
+    instruction: "入力は箇条書きです。各項目の関係を補いながら使ってください。"
+  },
+  {
+    id: "draft",
+    label: "下書き",
+    placeholder: "メール、投稿、説明文などの下書きを貼り付けてください。",
+    instruction: "入力は下書きです。元の意図を保ちながら、必要に応じて構成と表現を整えてください。"
+  },
+  {
+    id: "notes",
+    label: "会議メモ",
+    placeholder: "決定事項、発言、宿題、日付などを貼り付けてください。",
+    instruction: "入力は会議メモです。決定事項、未決事項、担当、次の行動を区別して使ってください。"
+  }
+];
+
+const materialHandlings = [
+  {
+    id: "use-as-is",
+    label: "そのまま使う",
+    instruction: "追加メモがある場合は主材料として扱い、ない場合は選択された条件を優先してください。"
+  },
+  {
+    id: "organize-first",
+    label: "整理してから",
+    instruction: "追加メモがある場合はまず整理し、目的に必要な情報だけを使ってください。"
+  },
+  {
+    id: "ask-if-missing",
+    label: "不足は質問",
+    instruction: "重要な情報が不足している場合は、作業前に確認質問を最大3つまで出してください。"
+  },
+  {
+    id: "separate-facts",
+    label: "事実と推測",
+    instruction: "追加メモがある場合は、事実、推測、希望を分けて扱ってください。"
+  }
+];
+
 const templates = [
   {
     id: "email",
@@ -93,6 +149,8 @@ const templates = [
     subtitle: "失礼なく、短く、送れる文に",
     icon: "✉",
     placeholder: "相手、目的、伝えたい内容を貼り付けてください。",
+    materialType: "draft",
+    materialHandling: "organize-first",
     blocks: [
       makeBlock("role", "編集者", "あなたは経験豊富な編集者です。"),
       makeBlock("goal", "文章を整える", "読みやすく自然な文章に改善してください。"),
@@ -107,6 +165,8 @@ const templates = [
     subtitle: "読むべき点だけに圧縮",
     icon: "文",
     placeholder: "要約したい文章を貼り付けてください。",
+    materialType: "free",
+    materialHandling: "use-as-is",
     blocks: [
       makeBlock("goal", "要約する", "重要な論点だけを残して要約してください。"),
       makeBlock("source", "貼り付け文を使う", "下の入力文を材料にしてください。"),
@@ -121,6 +181,8 @@ const templates = [
     subtitle: "雑なメモを提案に変える",
     icon: "案",
     placeholder: "作りたいもの、対象ユーザー、悩み、制約を書いてください。",
+    materialType: "memo",
+    materialHandling: "organize-first",
     blocks: [
       makeBlock("role", "企画担当", "あなたは事業企画の担当者です。"),
       makeBlock("goal", "アイデアを出す", "実行しやすいアイデアを複数提案してください。"),
@@ -135,6 +197,8 @@ const templates = [
     subtitle: "わからない所を順にほどく",
     icon: "学",
     placeholder: "学びたいテーマ、今わからない点、目標を書いてください。",
+    materialType: "free",
+    materialHandling: "ask-if-missing",
     blocks: [
       makeBlock("role", "先生", "あなたは初学者に教えるのが得意な先生です。"),
       makeBlock("goal", "学習する", "理解を深めるために、順番に説明してください。"),
@@ -148,12 +212,17 @@ const templates = [
 const state = {
   selectedTemplateId: templates[0].id,
   selectedKind: "goal",
+  materialType: templates[0].materialType,
+  materialHandling: templates[0].materialHandling,
   blocks: templates[0].blocks.map(cloneBlock),
   input: ""
 };
 
 const elements = {
   templateList: document.querySelector("#templateList"),
+  materialTypeList: document.querySelector("#materialTypeList"),
+  materialHandlingList: document.querySelector("#materialHandlingList"),
+  optionalInput: document.querySelector("#optionalInput"),
   sourceInput: document.querySelector("#sourceInput"),
   kindTabs: document.querySelector("#kindTabs"),
   blockPalette: document.querySelector("#blockPalette"),
@@ -181,6 +250,7 @@ function cloneBlock(block) {
 
 function render() {
   renderTemplates();
+  renderMaterialControls();
   renderKinds();
   renderPalette();
   renderSelectedBlocks();
@@ -203,12 +273,45 @@ function renderTemplates() {
     button.addEventListener("click", () => {
       state.selectedTemplateId = template.id;
       state.selectedKind = "goal";
+      state.materialType = template.materialType;
+      state.materialHandling = template.materialHandling;
       state.blocks = template.blocks.map(cloneBlock);
-      elements.sourceInput.placeholder = template.placeholder;
+      updateInputPlaceholder();
       render();
     });
     elements.templateList.append(button);
   });
+}
+
+function renderMaterialControls() {
+  renderChoiceList(elements.materialTypeList, materialTypes, state.materialType, (id) => {
+    state.materialType = id;
+    updateInputPlaceholder();
+    render();
+  });
+
+  renderChoiceList(elements.materialHandlingList, materialHandlings, state.materialHandling, (id) => {
+    state.materialHandling = id;
+    render();
+  });
+}
+
+function renderChoiceList(container, choices, selectedId, onSelect) {
+  container.innerHTML = "";
+  choices.forEach((choice) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `choice-button ${choice.id === selectedId ? "active" : ""}`;
+    button.textContent = choice.label;
+    button.addEventListener("click", () => onSelect(choice.id));
+    container.append(button);
+  });
+}
+
+function updateInputPlaceholder() {
+  const type = getMaterialType();
+  const template = templates.find((item) => item.id === state.selectedTemplateId) || templates[0];
+  elements.sourceInput.placeholder = type.placeholder || template.placeholder;
 }
 
 function renderKinds() {
@@ -325,13 +428,22 @@ function moveBlock(index, offset) {
 
 function composePrompt() {
   const sections = [];
+  const materialInstructions = [getMaterialType().instruction, getMaterialHandling().instruction].filter(Boolean);
   if (state.blocks.length > 0) {
     const lines = state.blocks.map((block, index) => `${index + 1}. ${block.instruction}`).join("\n");
     sections.push(`# 指示\n${lines}`);
   }
 
+  if (materialInstructions.length > 0) {
+    sections.push(`# 材料の扱い\n${materialInstructions.map((instruction, index) => `${index + 1}. ${instruction}`).join("\n")}`);
+  }
+
   const input = state.input.trim();
-  sections.push(`# 入力\n${input || "ここに材料を貼り付けます。"}`);
+  if (input) {
+    sections.push(`# 追加メモ\n${input}`);
+  } else {
+    sections.push("# 追加メモ\nなし。選択された条件だけで作成してください。");
+  }
   sections.push("# 出力前の確認\n条件同士が矛盾する場合は、最も自然な解釈を1つ選び、必要なら短く理由を添えてください。");
   return sections.join("\n\n");
 }
@@ -340,7 +452,8 @@ function readinessScore() {
   const kinds = new Set(state.blocks.map((block) => block.kind));
   let score = 20;
   if (kinds.has("goal")) score += 20;
-  if (kinds.has("source") || state.input.trim()) score += 20;
+  if (state.materialType && state.materialHandling) score += 20;
+  if (kinds.has("source") || state.input.trim()) score += 5;
   if (kinds.has("output")) score += 20;
   if (kinds.has("constraint") || kinds.has("tone")) score += 10;
   if (kinds.has("guardrail")) score += 10;
@@ -351,7 +464,7 @@ function hints() {
   const kinds = new Set(state.blocks.map((block) => block.kind));
   const items = [];
   if (!kinds.has("goal")) items.push("目的ブロックを足すと、AIが何をすべきか判断しやすくなります。");
-  if (!state.input.trim() && !kinds.has("source")) items.push("入力文か入力ブロックがあると、出力のぶれが減ります。");
+  if (!state.materialType || !state.materialHandling) items.push("材料タイプと扱い方を選ぶと、文章を書かなくても依頼がまとまります。");
   if (!kinds.has("output")) items.push("形式ブロックを足すと、コピーしやすい結果になります。");
   if (!kinds.has("guardrail")) items.push("確認ブロックを足すと、AIの思い込みを減らせます。");
   return items.slice(0, 3);
@@ -361,6 +474,8 @@ function persistState() {
   const payload = {
     selectedTemplateId: state.selectedTemplateId,
     selectedKind: state.selectedKind,
+    materialType: state.materialType,
+    materialHandling: state.materialHandling,
     blocks: state.blocks,
     input: state.input
   };
@@ -374,14 +489,25 @@ function restoreState() {
     const saved = JSON.parse(raw);
     if (saved.selectedTemplateId) state.selectedTemplateId = saved.selectedTemplateId;
     if (saved.selectedKind && kindLabels[saved.selectedKind]) state.selectedKind = saved.selectedKind;
+    if (saved.materialType && materialTypes.some((choice) => choice.id === saved.materialType)) state.materialType = saved.materialType;
+    if (saved.materialHandling && materialHandlings.some((choice) => choice.id === saved.materialHandling)) state.materialHandling = saved.materialHandling;
     if (Array.isArray(saved.blocks)) state.blocks = saved.blocks.map(cloneBlock);
     if (typeof saved.input === "string") {
       state.input = saved.input;
       elements.sourceInput.value = saved.input;
+      elements.optionalInput.open = saved.input.trim().length > 0;
     }
   } catch {
     localStorage.removeItem("promptblocks-state");
   }
+}
+
+function getMaterialType() {
+  return materialTypes.find((choice) => choice.id === state.materialType) || materialTypes[0];
+}
+
+function getMaterialHandling() {
+  return materialHandlings.find((choice) => choice.id === state.materialHandling) || materialHandlings[0];
 }
 
 elements.sourceInput.addEventListener("input", (event) => {
@@ -412,6 +538,5 @@ if ("serviceWorker" in navigator) {
 }
 
 restoreState();
-const selectedTemplate = templates.find((template) => template.id === state.selectedTemplateId) || templates[0];
-elements.sourceInput.placeholder = selectedTemplate.placeholder;
+updateInputPlaceholder();
 render();

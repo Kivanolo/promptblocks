@@ -46,9 +46,22 @@
             <path d="M6 3h9l3 3v15H6z"></path>
             <path d="M14 3v4h4M9 12h6M9 16h6"></path>
           </svg>
-          <h2 id="inputTitle">材料</h2>
+          <h2 id="inputTitle">条件を選ぶ</h2>
         </div>
-        <textarea id="sourceInput" rows="6" placeholder="相手、目的、伝えたい内容を貼り付けてください。"></textarea>
+        <div class="material-controls" aria-label="材料の扱い">
+          <div>
+            <h3>材料タイプ</h3>
+            <div id="materialTypeList" class="choice-list"></div>
+          </div>
+          <div>
+            <h3>扱い方</h3>
+            <div id="materialHandlingList" class="choice-list"></div>
+          </div>
+        </div>
+        <details id="optionalInput" class="optional-input">
+          <summary>文章でこだわる</summary>
+          <textarea id="sourceInput" rows="6" placeholder="相手、目的、伝えたい内容を貼り付けてください。"></textarea>
+        </details>
       </section>
 
       <section class="section" aria-labelledby="blocksTitle">

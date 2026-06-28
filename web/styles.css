@@ -231,24 +231,82 @@ h2 {
   color: rgba(255, 255, 255, 0.82);
 }
 
-textarea {
-  width: 100%;
-  min-height: 128px;
-  margin-top: 10px;
+.material-controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.choice-list {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 2px 2px;
+  scrollbar-width: none;
+}
+
+.choice-list::-webkit-scrollbar {
+  display: none;
+}
+
+.choice-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 13px;
+  border-radius: 999px;
+  padding: 0 12px;
   color: var(--text);
   background: var(--panel);
-  resize: vertical;
-  outline: none;
-  line-height: 1.5;
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.choice-button.active {
+  color: #fff;
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.optional-input {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
   box-shadow: 0 6px 18px rgba(23, 32, 51, 0.04);
 }
 
+.optional-input summary {
+  min-height: 44px;
+  padding: 12px 13px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.optional-input summary::marker {
+  color: var(--blue);
+}
+
+textarea {
+  width: 100%;
+  min-height: 128px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 8px 8px;
+  padding: 13px;
+  color: var(--text);
+  background: var(--panel-soft);
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+
 textarea:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 4px rgba(35, 104, 214, 0.13);
+  box-shadow: inset 0 0 0 3px rgba(35, 104, 214, 0.13);
 }
 
 .kind-tab {
@@ -490,6 +548,10 @@ pre {
 
   .section {
     margin-top: 24px;
+  }
+
+  .material-controls {
+    grid-template-columns: 1fr 1fr;
   }
 
   .preview-section {

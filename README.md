@@ -2,11 +2,12 @@
 
 PromptBlocks is a PWA and SwiftUI iOS MVP for light LLM users who want good prompts without writing prompt engineering patterns from scratch.
 
-The app turns prompt composition into a tap-based block flow:
+The app turns prompt composition into a tap-based block flow. The default path is selection-first: users should be able to create a useful prompt without writing prose. Free text is optional for users who want more control.
 
 - Choose a common use case template.
-- Paste rough source material.
+- Choose source material type and handling.
 - Add blocks for goal, role, audience, constraints, output format, tone, and safety checks.
+- Optionally add rough source material when more control is needed.
 - Copy the generated prompt.
 
 ## Product Direction
@@ -48,6 +49,7 @@ jp.dev.promptblocks
 - Static PWA for GitHub Pages or other free hosting.
 - Four starter templates: email rewrite, summary, planning, and study support.
 - Block palette by intent category.
+- Selectable material type and handling mode.
 - Live prompt preview.
 - Readiness score and improvement hints.
 - Copy to pasteboard.
